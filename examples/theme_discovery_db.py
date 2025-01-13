@@ -4,20 +4,35 @@ import json
 from models.article import Article
 from main import ThemeDiscoveryOrchestrator
 
+filter_content = True
 
 def load_sample_articles() -> List[Article]:
     """Load sample articles from JSON file"""
     with open('/media/ssdev/tgds/tgds-python-tools/run/wip/course/data/articles.json', 'r') as f:
         data = json.load(f)
 
-    print(data[0])
+    subset = [
+        'MODULES',
+        '__content',
+        '__collector',
+        '__wip'
+    ]
+
+    # a function to filter content where path is in subset
+    def filter_content(item):
+        for sub in subset:
+            if item['path'].startswith(f'/{sub}/'):
+                return True
+        return False
+
     articles = []
     for item in data:
-        articles.append(Article(
-            id=item['id'],
-            path=item['path'],
-            keywords=item['keywords'] if 'keywords' in item else []
-        ))
+        if filter_content(item):
+            articles.append(Article(
+                id=item['id'],
+                path=item['path'],
+                keywords=item['keywords'] if 'keywords' in item else []
+            ))
 
     return articles
 
@@ -25,6 +40,7 @@ def load_sample_articles() -> List[Article]:
 def main():
     # Load sample articles
     articles = load_sample_articles()
+
 
     # Initialize orchestrator
     orchestrator = ThemeDiscoveryOrchestrator(
